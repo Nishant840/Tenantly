@@ -35,10 +35,18 @@ export async function GET(){
         },
         include: {
             user: {
-                select: {
-                    id: true,
-                    email: true,
-                    name: true,
+                include: {
+                    projectMemberships: {
+                        include: {
+                            project: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    organizationId: true,
+                                },
+                            },
+                        },
+                    },
                 },
             },
         },
@@ -48,7 +56,13 @@ export async function GET(){
         userId: m.user.id,
         email: m.user.email,
         name: m.user.name,
-        role: m.role
+        role: m.role,
+
+        projects: m.user.projectMemberships.filter((pm) => pm.project.organizationId === orgId)
+        .map((pm) => ({
+            projectId: pm.project.id,
+            projectName: pm.project.name,
+        })),
     }));
 
     return NextResponse.json(formatted);
