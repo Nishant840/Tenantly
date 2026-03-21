@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import authOptions from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
@@ -45,5 +46,11 @@ export async function POST(req: Request){
         
     })
 
+    await logAudit({
+        action: "ACCEPT_INVITE",
+        userId: user.id,
+        organizationId: invite.organizationId,
+    });
+    
     return NextResponse.json({ success: true });
 }

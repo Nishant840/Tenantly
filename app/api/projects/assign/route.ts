@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import authOptions from "@/lib/auth-options";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
@@ -87,5 +88,12 @@ export async function POST(req: Request){
         },
     });
 
+    await logAudit({
+        action: "ASSIGN_USER_TO_PROJECT",
+        userId: actor.id,
+        organizationId: orgMemberships.organizationId,
+        resource: project.id
+    });
+    
     return NextResponse.json({success: true});
 }

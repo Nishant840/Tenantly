@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import authOptions from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { generateApiKey, hashApiKey } from "@/lib/api-key"
+import { logAudit } from "@/lib/audit";
 
 export async function POST(){
     const session = await getServerSession(authOptions);
@@ -49,6 +50,12 @@ export async function POST(){
         },
     });
 
+    await logAudit({
+        action: "CREATE_API_KEY",
+        userId: user.id,
+        organizationId: orgMembership.organizationId,
+    });
+    
     return NextResponse.json({
         apiKey: rawKey,
     });

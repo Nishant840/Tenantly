@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import authOptions from "../auth-options"
 import { prisma } from "@/lib/prisma"
 import { PLAN_LIMITS } from "@/lib/plans"
+import { logAudit } from "../audit"
 
 export async function createProject(formData: FormData){
     const name = formData.get("name") as string;
@@ -49,6 +50,13 @@ export async function createProject(formData: FormData){
                 organizationId: activeOrg.id,
             },
         });
+
+        await logAudit({
+            action: "CREATE_PROJECT",
+            userId: user.id,
+            organizationId: activeOrg.id,
+            resource: project.id,
+        })
 
         await tx.projectMembership.create({
             data: {

@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import authOptions from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
@@ -85,5 +86,12 @@ export async function POST(req: Request){
         },
     });
 
+    await logAudit({
+        action: "REMOVE_USER_FROM_PROJECT",
+        userId: actor.id,
+        organizationId: orgMembership.organizationId,
+        resource: projectId,
+    });
+    
     return NextResponse.json({success: true});
 }
