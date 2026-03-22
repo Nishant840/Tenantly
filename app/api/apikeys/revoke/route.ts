@@ -1,12 +1,13 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import authOptions from "@/lib/auth-options";
+import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
 
-    if(!session?.user?.email || !session.user.activeOrgId){
+    if(!session?.user?.email || !session.user.id || !session.user.activeOrgId){
         return NextResponse.json(
             {error: "Unauthorized"},
             {status: 401},
@@ -38,6 +39,13 @@ export async function POST(req: Request){
         data: {
             revokedAt: new Date(),
         },
+    });
+
+    await logAudit({
+        action: "REVOKE_API_KEY",
+        userId: session.user.id,
+        organizationId: session.user.activeOrgId,
+        resource: `Key ${keyId.slice(0, 8)}… revoked`,
     });
 
     return NextResponse.json({success: true});

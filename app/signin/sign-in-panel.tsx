@@ -86,6 +86,10 @@ export function SignInPanel() {
               <p className="text-center text-xs text-[var(--foreground-muted)]">
                 By continuing you agree to our terms and privacy practices.
               </p>
+              <p className="text-center text-xs text-[var(--foreground-subtle)]">
+                Were you invited? Use the same Google account as the invitation
+                email — you can accept from the dashboard or onboarding.
+              </p>
             </CardContent>
           </Card>
         </div>

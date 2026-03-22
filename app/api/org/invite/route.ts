@@ -58,7 +58,7 @@ export async function POST(req: Request){
         action: "INVITE_USER",
         userId: inviter.id,
         organizationId: activeOrgMembership.organizationId,
-        resource: email,
+        resource: `Invited ${email} as ${role}`,
     })
     return NextResponse.json(invite);
 }

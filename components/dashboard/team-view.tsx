@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -49,6 +49,44 @@ export function TeamView({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [removeTarget, setRemoveTarget] = useState<TeamMemberRow | null>(null);
   const [removeLoading, setRemoveLoading] = useState(false);
+  const [sentInvites, setSentInvites] = useState<
+    { id: string; email: string; role: string; createdAt: string }[] | null
+  >(null);
+
+  const loadSentInvites = useCallback(async () => {
+    if (!canManage) {
+      setSentInvites([]);
+      return;
+    }
+    try {
+      const res = await fetch("/api/org/invites/org-pending");
+      if (!res.ok) {
+        setSentInvites([]);
+        return;
+      }
+      const data = (await res.json()) as {
+        id: string;
+        email: string;
+        role: string;
+        createdAt: string;
+      }[];
+      setSentInvites(
+        data.map((r) => ({
+          ...r,
+          createdAt:
+            typeof r.createdAt === "string"
+              ? r.createdAt
+              : new Date(r.createdAt).toISOString(),
+        })),
+      );
+    } catch {
+      setSentInvites([]);
+    }
+  }, [canManage]);
+
+  useEffect(() => {
+    void loadSentInvites();
+  }, [loadSentInvites]);
 
   async function submitInvite() {
     setInviteError(null);
@@ -67,6 +105,7 @@ export function TeamView({
       }
       setInviteOpen(false);
       setEmail("");
+      await loadSentInvites();
       router.refresh();
     } catch {
       setInviteError("Something went wrong.");
@@ -183,34 +222,66 @@ export function TeamView({
         </div>
       </Modal>
 
-      <ConfirmDialog
-        open={!!removeTarget}
-        onClose={() => setRemoveTarget(null)}
-        onConfirm={() => void confirmRemoveMember()}
-        title="Remove from organization"
-        description={
-          removeTarget
-            ? `Remove ${removeTarget.name || removeTarget.email} from this organization? Their project access in this org will be removed.`
-            : ""
-        }
-        confirmLabel="Remove"
-        loading={removeLoading}
-      />
+      {canManage && sentInvites !== null ? (
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--foreground-subtle)]">
+              Pending invitations
+            </h2>
+            <p className="mt-1 text-sm text-[var(--foreground-muted)]">
+              Open invites for this organization. Recipients will see them when
+              signed in with the invited email.
+            </p>
+          </div>
+          {sentInvites.length === 0 ? (
+            <EmptyState
+              title="No pending invites"
+              description="Invited people appear here until they accept."
+            />
+          ) : (
+            <TableWrap>
+              <TableHead>
+                <Th>Email</Th>
+                <Th>Role</Th>
+                <Th>Sent</Th>
+              </TableHead>
+              <Tbody>
+                {sentInvites.map((r) => (
+                  <Tr key={r.id}>
+                    <Td className="font-medium">{r.email}</Td>
+                    <Td>{formatOrgRole(r.role)}</Td>
+                    <Td className="text-[var(--foreground-muted)]">
+                      {new Date(r.createdAt).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </TableWrap>
+          )}
+        </section>
+      ) : null}
 
-      {members.length === 0 ? (
-        <EmptyState
-          title="No members"
-          description="Invite teammates to collaborate in this organization."
-          action={
-            canManage ? (
-              <Button type="button" onClick={() => setInviteOpen(true)}>
-                Invite user
-              </Button>
-            ) : null
-          }
-        />
-      ) : (
-        <TableWrap>
+      <section className="space-y-4 border-t border-[var(--border)] pt-8">
+        <h2 className="text-sm font-medium uppercase tracking-wider text-[var(--foreground-subtle)]">
+          Members
+        </h2>
+        {members.length === 0 ? (
+          <EmptyState
+            title="No members"
+            description="Invite teammates to collaborate in this organization."
+            action={
+              canManage ? (
+                <Button type="button" onClick={() => setInviteOpen(true)}>
+                  Invite user
+                </Button>
+              ) : null
+            }
+          />
+        ) : (
+          <TableWrap>
           <TableHead>
             <Th>Name</Th>
             <Th>Email</Th>
@@ -256,7 +327,22 @@ export function TeamView({
             ))}
           </Tbody>
         </TableWrap>
-      )}
+        )}
+      </section>
+
+      <ConfirmDialog
+        open={!!removeTarget}
+        onClose={() => setRemoveTarget(null)}
+        onConfirm={() => void confirmRemoveMember()}
+        title="Remove from organization"
+        description={
+          removeTarget
+            ? `Remove ${removeTarget.name || removeTarget.email} from this organization? Their project access in this org will be removed.`
+            : ""
+        }
+        confirmLabel="Remove"
+        loading={removeLoading}
+      />
     </div>
   );
 }

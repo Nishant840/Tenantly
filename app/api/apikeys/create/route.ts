@@ -65,6 +65,7 @@ export async function POST(){
         action: "CREATE_API_KEY",
         userId: user.id,
         organizationId: orgMembership.organizationId,
+        resource: "New API key created",
     });
     
     return NextResponse.json({

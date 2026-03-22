@@ -71,6 +71,9 @@ export default async function DashboardProjectsPage() {
       orgMembers={orgMembers}
       currentUserId={userId}
       canManage={membership.role !== "MEMBER"}
+      canDeleteProject={
+        membership.role === "ADMIN" || membership.role === "OWNER"
+      }
       atLimit={atLimit}
       limitDescription={limitDescription}
     />

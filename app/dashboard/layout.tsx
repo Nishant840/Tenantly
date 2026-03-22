@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { PendingInvitesBanner } from "@/components/dashboard/pending-invites-banner";
 import authOptions from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 
@@ -46,6 +47,7 @@ export default async function DashboardLayout({
       userEmail={session.user.email}
       userName={session.user.name}
     >
+      <PendingInvitesBanner />
       {children}
     </DashboardShell>
   );

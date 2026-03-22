@@ -36,6 +36,8 @@ type ProjectsViewProps = {
   orgMembers: OrgMemberOption[];
   currentUserId: string;
   canManage: boolean;
+  /** Only org owners and admins may delete entire projects (not org members). */
+  canDeleteProject: boolean;
   atLimit: boolean;
   limitDescription: string;
 };
@@ -45,12 +47,15 @@ export function ProjectsView({
   orgMembers,
   currentUserId,
   canManage,
+  canDeleteProject,
   atLimit,
   limitDescription,
 }: ProjectsViewProps) {
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
   const [assignProject, setAssignProject] = useState<ProjectRow | null>(null);
+  const [deleteProject, setDeleteProject] = useState<ProjectRow | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<{
     projectId: string;
     userId: string;
@@ -118,6 +123,24 @@ export function ProjectsView({
       }
     } finally {
       setRemoveLoading(false);
+    }
+  }
+
+  async function confirmDeleteProject() {
+    if (!deleteProject) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch("/api/projects/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: deleteProject.id }),
+      });
+      if (res.ok) {
+        setDeleteProject(null);
+        router.refresh();
+      }
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -251,6 +274,20 @@ export function ProjectsView({
         loading={removeLoading}
       />
 
+      <ConfirmDialog
+        open={!!deleteProject}
+        onClose={() => setDeleteProject(null)}
+        onConfirm={() => void confirmDeleteProject()}
+        title="Delete project"
+        description={
+          deleteProject
+            ? `Permanently delete “${deleteProject.name}” and remove all members from it? This cannot be undone.`
+            : ""
+        }
+        confirmLabel="Delete project"
+        loading={deleteLoading}
+      />
+
       {projects.length === 0 ? (
         <EmptyState
           title="No projects yet"
@@ -306,6 +343,17 @@ export function ProjectsView({
                       >
                         Assign user
                       </Button>
+                      {canDeleteProject ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 dark:text-red-400"
+                          onClick={() => setDeleteProject(project)}
+                        >
+                          Delete project
+                        </Button>
+                      ) : null}
                     </div>
                   ) : null}
                   {project.members.length > 0 ? (

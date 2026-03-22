@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TenantlyMark, TenantlyWordmark } from "@/components/brand/tenantly-mark";
+import { PendingInvitesBanner } from "@/components/dashboard/pending-invites-banner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,6 +59,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-app-pattern px-6 py-10">
       <div className="mx-auto flex max-w-lg flex-col">
+        <PendingInvitesBanner />
         <Link
           href="/"
           className="mb-10 inline-flex items-center gap-2.5 self-start rounded-lg outline-none ring-offset-2 ring-offset-[var(--background)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
