@@ -7,7 +7,7 @@ import { logAudit } from "@/lib/audit";
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
 
-    if(!session?.user?.email){
+    if(!session?.user?.email || !session.user.id || !session.user.activeOrgId){
         return NextResponse.json({error:"Unauthorized"},{status:401});
     }
 
@@ -26,16 +26,24 @@ export async function POST(req: Request){
 
     const actor = await prisma.user.findUnique({
         where:{email: session.user.email},
-        include:{
-            orgMemberships: true,
+    });
+
+    if(!actor){
+        return NextResponse.json({error:"User not found"},{status:404});
+    }
+
+    const orgMemberships = await prisma.orgMembership.findUnique({
+        where: {
+            userId_organizationId: {
+                userId: session.user.id,
+                organizationId: session.user.activeOrgId,
+            },
         },
     });
 
-    if(!actor || actor.orgMemberships.length == 0){
+    if(!orgMemberships){
         return NextResponse.json({error:"No organization"},{status:400});
     }
-
-    const orgMemberships = actor.orgMemberships[0];
 
     if(orgMemberships.role == "MEMBER"){
         return NextResponse.json({error:"Forbidden"},{status:403});

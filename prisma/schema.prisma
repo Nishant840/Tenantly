@@ -19,6 +19,9 @@ model User {
   name      String?
   createdAt DateTime @default(now())
 
+  activeOrgId        String?
+  activeOrganization Organization? @relation("UserActiveOrganization", fields: [activeOrgId], references: [id], onDelete: SetNull)
+
   orgMemberships     OrgMembership[]
   projectMemberships ProjectMembership[]
   auditLogs          AuditLog[]
@@ -39,6 +42,8 @@ model Organization {
   slug      String   @unique
   plan      PlanType @default(FREE)
   createdAt DateTime @default(now())
+
+  activeForUsers User[] @relation("UserActiveOrganization")
 
   members   OrgMembership[]
   projects  Project[]

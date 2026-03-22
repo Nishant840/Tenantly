@@ -15,28 +15,37 @@ export async function createProject(formData: FormData){
 
     const session = await getServerSession(authOptions);
 
-    if(!session?.user?.email){
+    if(!session?.user?.email || !session.user.id || !session.user.activeOrgId){
         throw new Error("Unauthroized");
     }
 
     const user = await prisma.user.findUnique({
         where: {email: session.user.email},
+    });
+
+    if(!user){
+        throw new Error("User not found");
+    }
+
+    const membership = await prisma.orgMembership.findUnique({
+        where: {
+            userId_organizationId: {
+                userId: session.user.id,
+                organizationId: session.user.activeOrgId,
+            },
+        },
         include: {
-            orgMemberships: {
-                include: {
-                    organization:{
-                        include: {projects: true},
-                    },
-                },
+            organization: {
+                include: { projects: true },
             },
         },
     });
 
-    if(!user || user.orgMemberships.length==0){
+    if(!membership){
         throw new Error("No organization");
     }
 
-    const activeOrg = user.orgMemberships[0].organization;
+    const activeOrg = membership.organization;
     const limit = PLAN_LIMITS[activeOrg.plan].projects;
 
     if(activeOrg.projects.length >= limit){

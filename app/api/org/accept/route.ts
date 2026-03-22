@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import authOptions from "@/lib/auth-options";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
+import { userActiveOrgUpdateData } from "@/lib/user-active-org-data";
 
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
@@ -43,7 +44,11 @@ export async function POST(req: Request){
             where: {id: invite.id},
             data: {status:"ACCEPTED"},
         });
-        
+
+        await tx.user.update({
+            where: { id: user.id },
+            data: userActiveOrgUpdateData(invite.organizationId),
+        });
     })
 
     await logAudit({

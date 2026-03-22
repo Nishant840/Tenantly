@@ -6,28 +6,30 @@ import { prisma } from "@/lib/prisma";
 export async function GET(){
     const session = await getServerSession(authOptions);
 
-    if(!session?.user?.email){
+    if(!session?.user?.email || !session.user.id || !session.user.activeOrgId){
         return NextResponse.json(
             {error: "Unauthorized"},
             {status: 401}
         );
     }
 
-    const user = await prisma.user.findUnique({
-        where: {email: session.user.email},
-        include: {
-            orgMemberships: true,
+    const membership = await prisma.orgMembership.findUnique({
+        where: {
+            userId_organizationId: {
+                userId: session.user.id,
+                organizationId: session.user.activeOrgId,
+            },
         },
     });
 
-    if(!user || user.orgMemberships.length === 0){
+    if(!membership){
         return NextResponse.json(
             {error: "No organization"},
             {status: 400}
         );
     }
 
-    const orgId = user.orgMemberships[0].organizationId;
+    const orgId = session.user.activeOrgId;
 
     const members = await prisma.orgMembership.findMany({
         where: {

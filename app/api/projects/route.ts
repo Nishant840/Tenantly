@@ -7,7 +7,7 @@ import { PLAN_LIMITS } from "@/lib/plans";
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
 
-    if(!session?.user?.email){
+    if(!session?.user?.email || !session.user.id || !session.user.activeOrgId){
         return NextResponse.json({error: "Unauthorized"},{status:401});
     }
 
@@ -19,22 +19,31 @@ export async function POST(req: Request){
 
     const user = await prisma.user.findUnique({
         where: {email:session.user.email},
+    });
+
+    if(!user){
+        return NextResponse.json({error: "User not found"},{status:404});
+    }
+
+    const membership = await prisma.orgMembership.findUnique({
+        where: {
+            userId_organizationId: {
+                userId: session.user.id,
+                organizationId: session.user.activeOrgId,
+            },
+        },
         include: {
-            orgMemberships:{
-                include:{
-                    organization:{
-                        include:{projects: true},
-                    },
-                },
+            organization: {
+                include: { projects: true },
             },
         },
     });
 
-    if(!user || user.orgMemberships.length==0){
+    if(!membership){
         return NextResponse.json({error: "No Organization"},{status:400});
     }
 
-    const activeOrg = user.orgMemberships[0].organization;
+    const activeOrg = membership.organization;
     const projectCount = activeOrg.projects.length;
     const limit = PLAN_LIMITS[activeOrg.plan].projects;
 

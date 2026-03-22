@@ -13,22 +13,25 @@ export default async function DashboardPage(){
         redirect("/api/auth/signin")
     }
 
-    const user = await prisma.user.findUnique({
-        where: {email: session.user.email},
-        include: {
-            orgMemberships: {
-                include: {
-                    organization: true
-                },
+    if(!session.user.id || !session.user.activeOrgId){
+        redirect("/onboarding")
+    }
+
+    const membership = await prisma.orgMembership.findUnique({
+        where: {
+            userId_organizationId: {
+                userId: session.user.id,
+                organizationId: session.user.activeOrgId,
             },
         },
+        include: { organization: true },
     });
 
-    if(!user || user.orgMemberships.length == 0){
+    if(!membership){
         redirect("/onboarding");
     }
 
-    const activeOrg = user.orgMemberships[0].organization;
+    const activeOrg = membership.organization;
 
     const projects = await listProjects();
 
