@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: Request){
     const session = await getServerSession(authOptions);
 
-    if(!session?.user?.email){
+    if(!session?.user?.email || !session.user.activeOrgId){
         return NextResponse.json(
             {error: "Unauthorized"},
             {status: 401},
@@ -19,6 +19,17 @@ export async function POST(req: Request){
         return NextResponse.json(
             {error: "keyId required"},
             {status: 400},
+        );
+    }
+
+    const key = await prisma.apiKey.findUnique({
+        where: { id: keyId },
+    });
+
+    if(!key || key.organizationId !== session.user.activeOrgId){
+        return NextResponse.json(
+            {error: "Not found"},
+            {status: 404},
         );
     }
 

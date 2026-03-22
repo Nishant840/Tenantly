@@ -1,5 +1,6 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { getServerSession } from "next-auth"
 import authOptions from "../auth-options"
 import { prisma } from "@/lib/prisma"
@@ -75,4 +76,6 @@ export async function createProject(formData: FormData){
             },
         });
     });
+
+    revalidatePath("/dashboard");
 }

@@ -1,8 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --foreground-muted: #525252;
+  --foreground-subtle: #a3a3a3;
+  --card: #ffffff;
+  --border: #e5e5e5;
+  --muted: #f4f4f5;
+  --input-bg: #ffffff;
+  --sidebar: #fafafa;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-foreground: #ffffff;
+  --ring: #4f46e5;
+  --mesh-1: rgba(79, 70, 229, 0.08);
+  --mesh-2: rgba(59, 130, 246, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+    --foreground-muted: #a3a3a3;
+    --foreground-subtle: #737373;
+    --card: #171717;
+    --border: #262626;
+    --muted: #1a1a1a;
+    --input-bg: #0a0a0a;
+    --sidebar: #0f0f0f;
+    --primary: #6366f1;
+    --primary-hover: #818cf8;
+    --primary-foreground: #ffffff;
+    --ring: #6366f1;
+    --mesh-1: rgba(99, 102, 241, 0.12);
+    --mesh-2: rgba(59, 130, 246, 0.08);
+  }
 }
 
 @theme inline {
@@ -12,15 +45,31 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Subtle grid for auth / onboarding backgrounds */
+.bg-app-pattern {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(
+      ellipse 80% 50% at 50% -20%,
+      var(--mesh-1),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 100% 0%,
+      var(--mesh-2),
+      transparent
+    ),
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    100% 100%,
+    48px 48px,
+    48px 48px;
 }

@@ -37,6 +37,11 @@ export async function GET(){
             createdAt: "desc",
         },
         take: 50,
+        include: {
+            user: {
+                select: { email: true, name: true },
+            },
+        },
     });
 
     return NextResponse.json(logs);

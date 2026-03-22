@@ -43,6 +43,9 @@ async function syncUserJwtFromDb(token: JWT, email: string) {
 }
 
 const authOptions: AuthOptions = {
+  pages: {
+    signIn: "/signin",
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
