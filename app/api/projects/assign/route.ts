@@ -57,6 +57,11 @@ export async function POST(req: Request){
         return NextResponse.json({error:"Invalid project"},{status:400});
     }
 
+    const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+    });
+
     const targetMembership = await prisma.orgMembership.findUnique({
         where:{
             userId_organizationId: {
@@ -100,7 +105,7 @@ export async function POST(req: Request){
         action: "ASSIGN_USER_TO_PROJECT",
         userId: actor.id,
         organizationId: orgMemberships.organizationId,
-        resource: project.id
+        resource: `Assigned ${targetUser?.email ?? userId} to project "${project.name}" as ${role}`,
     });
     
     return NextResponse.json({success: true});

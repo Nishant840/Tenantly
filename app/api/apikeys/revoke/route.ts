@@ -45,7 +45,7 @@ export async function POST(req: Request){
         action: "REVOKE_API_KEY",
         userId: session.user.id,
         organizationId: session.user.activeOrgId,
-        resource: `Key ${keyId.slice(0, 8)}… revoked`,
+        resource: `Revoked API key ${key.id.slice(0, 8)}…`,
     });
 
     return NextResponse.json({success: true});

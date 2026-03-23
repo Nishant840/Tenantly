@@ -54,11 +54,16 @@ export async function POST(req: Request){
         },
     });
 
+    const organization = await prisma.organization.findUnique({
+        where: { id: activeOrgMembership.organizationId },
+        select: { name: true },
+    });
+
     await logAudit({
         action: "INVITE_USER",
         userId: inviter.id,
         organizationId: activeOrgMembership.organizationId,
-        resource: `Invited ${email} as ${role}`,
+        resource: `Invited ${email} as ${role} to "${organization?.name ?? "organization"}"`,
     })
     return NextResponse.json(invite);
 }

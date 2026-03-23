@@ -54,10 +54,13 @@ export async function POST(){
     const rawKey = generateApiKey();
     const keyHash = hashApiKey(rawKey);
 
-    await prisma.apiKey.create({
+    const createdKey = await prisma.apiKey.create({
         data: {
             keyHash,
             organizationId: orgMembership.organizationId,
+        },
+        select: {
+            id: true,
         },
     });
 
@@ -65,7 +68,7 @@ export async function POST(){
         action: "CREATE_API_KEY",
         userId: user.id,
         organizationId: orgMembership.organizationId,
-        resource: "New API key created",
+        resource: `Created API key ${createdKey.id.slice(0, 8)}… (shown once)`,
     });
     
     return NextResponse.json({

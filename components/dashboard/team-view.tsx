@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,11 @@ export function TeamView({
   const [sentInvites, setSentInvites] = useState<
     { id: string; email: string; role: string; createdAt: string }[] | null
   >(null);
+
+  const { update } = useSession();
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
 
   const loadSentInvites = useCallback(async () => {
     if (!canManage) {
@@ -132,6 +138,29 @@ export function TeamView({
     }
   }
 
+  async function confirmLeaveOrganization() {
+    setLeaveLoading(true);
+    setLeaveError(null);
+
+    try {
+      const res = await fetch("/api/org/leave", { method: "POST" });
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+      };
+
+      if (!res.ok) {
+        setLeaveError(data.error ?? "Unable to leave organization.");
+        return;
+      }
+
+      await update();
+      router.refresh();
+      setLeaveOpen(false);
+    } finally {
+      setLeaveLoading(false);
+    }
+  }
+
   function canRemoveRow(row: TeamMemberRow): boolean {
     if (!canManage) return false;
     if (row.userId === currentUserId) return false;
@@ -150,12 +179,45 @@ export function TeamView({
             Members of your active organization and their project access.
           </p>
         </div>
-        {canManage ? (
-          <Button type="button" onClick={() => setInviteOpen(true)}>
-            Invite user
+        <div className="flex flex-wrap items-center gap-2">
+          {canManage ? (
+            <Button type="button" onClick={() => setInviteOpen(true)}>
+              Invite user
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setLeaveError(null);
+              setLeaveOpen(true);
+            }}
+            disabled={leaveLoading}
+          >
+            {leaveLoading ? "Leaving…" : "Leave organization"}
           </Button>
-        ) : null}
+        </div>
       </div>
+
+      {leaveError ? (
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+          {leaveError}
+        </p>
+      ) : null}
+
+      <ConfirmDialog
+        open={leaveOpen}
+        onClose={() => setLeaveOpen(false)}
+        onConfirm={() => void confirmLeaveOrganization()}
+        title="Leave organization"
+        description={
+          actorOrgRole === "OWNER"
+            ? "Owners can leave only if another owner remains in this organization."
+            : "You will lose access to this organization. You can be invited again later."
+        }
+        confirmLabel="Leave"
+        loading={leaveLoading}
+      />
 
       <Modal
         open={inviteOpen}

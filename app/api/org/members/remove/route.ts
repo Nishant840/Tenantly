@@ -83,11 +83,22 @@ export async function POST(req: Request) {
     });
   });
 
+  const [org, targetUser] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { email: true, name: true },
+    }),
+  ]);
+
   await logAudit({
     action: "REMOVE_ORG_MEMBER",
     userId: session.user.id,
     organizationId,
-    resource: targetUserId,
+    resource: `Removed ${targetUser?.email ?? targetUserId} from "${org?.name ?? "organization"}"`,
   });
 
   return NextResponse.json({ success: true });

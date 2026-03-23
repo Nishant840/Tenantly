@@ -19,7 +19,7 @@ import { requireActiveOrg } from "@/lib/require-active-org";
 import { prisma } from "@/lib/prisma";
 
 export default async function DashboardOverviewPage() {
-  const { organization, orgId } = await requireActiveOrg();
+  const { organization, orgId, membership } = await requireActiveOrg();
 
   const [projectCount, memberCount, activeKeyCount, recentLogs] =
     await Promise.all([
@@ -54,6 +54,13 @@ export default async function DashboardOverviewPage() {
             {organization.plan}
           </span>
         </p>
+        {membership.role !== "MEMBER" ? (
+          <div className="mt-4">
+            <Button variant="secondary" size="sm" asChild>
+              <Link href="/dashboard/upgrade-plan">Upgrade plan</Link>
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -128,7 +135,7 @@ export default async function DashboardOverviewPage() {
                   <Td className="text-[var(--foreground-muted)]">
                     {log.user?.name || log.user?.email || "—"}
                   </Td>
-                  <Td className="max-w-[180px] truncate text-[var(--foreground-muted)]">
+                  <Td className="max-w-[280px] whitespace-normal break-words text-[var(--foreground-muted)]">
                     {log.resource ?? "—"}
                   </Td>
                   <Td className="whitespace-nowrap text-[var(--foreground-muted)]">

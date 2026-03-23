@@ -57,7 +57,7 @@ export default async function DashboardAuditLogsPage() {
                 <Td className="text-[var(--foreground-muted)]">
                   {log.user?.name || log.user?.email || "—"}
                 </Td>
-                <Td className="max-w-[220px] truncate text-[var(--foreground-muted)]">
+                <Td className="max-w-[320px] whitespace-normal break-words text-[var(--foreground-muted)]">
                   {log.resource ?? "—"}
                 </Td>
                 <Td className="whitespace-nowrap text-[var(--foreground-muted)]">

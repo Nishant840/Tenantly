@@ -77,7 +77,12 @@ const authOptions: AuthOptions = {
         token.email = email;
       }
 
-      if (trigger === "update" || user || token.activeOrgId === undefined) {
+      if (
+        trigger === "update" ||
+        user ||
+        token.id === undefined ||
+        token.activeOrgId === undefined
+      ) {
         return syncUserJwtFromDb(token, email);
       }
 

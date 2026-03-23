@@ -67,6 +67,11 @@ export async function POST(req: Request){
         );
     }
 
+    const targetUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, name: true },
+    });
+
     if(actor.id === userId){
         return NextResponse.json(
             {error: "Cannot remove yourself"},
@@ -103,7 +108,7 @@ export async function POST(req: Request){
         action: "REMOVE_USER_FROM_PROJECT",
         userId: actor.id,
         organizationId: orgMembership.organizationId,
-        resource: projectId,
+        resource: `Removed ${targetUser?.email ?? userId} from project "${project.name}"`,
     });
     
     return NextResponse.json({success: true});

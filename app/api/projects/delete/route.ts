@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     action: "DELETE_PROJECT",
     userId: session.user.id,
     organizationId: orgId,
-    resource: `${project.name} (${projectId})`,
+    resource: `Deleted project "${project.name}" (${projectId.slice(0, 8)}…)`,
   });
 
   return NextResponse.json({ success: true });

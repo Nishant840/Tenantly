@@ -4,6 +4,7 @@ import {
 } from "@/components/dashboard/team-view";
 import { requireActiveOrg } from "@/lib/require-active-org";
 import { prisma } from "@/lib/prisma";
+import { PendingInvitesBanner } from "@/components/dashboard/pending-invites-banner";
 
 export default async function DashboardTeamPage() {
   const { membership, orgId, userId } = await requireActiveOrg();
@@ -40,11 +41,14 @@ export default async function DashboardTeamPage() {
   }));
 
   return (
-    <TeamView
-      members={members}
-      currentUserId={userId}
-      actorOrgRole={membership.role}
-      canManage={membership.role !== "MEMBER"}
-    />
+    <>
+      <PendingInvitesBanner />
+      <TeamView
+        members={members}
+        currentUserId={userId}
+        actorOrgRole={membership.role}
+        canManage={membership.role !== "MEMBER"}
+      />
+    </>
   );
 }

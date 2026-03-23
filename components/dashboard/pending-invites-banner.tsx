@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatOrgRole } from "@/lib/format-role";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatOrgRole } from "@/lib/format-role";
 
 type PendingInvite = {
   id: string;
@@ -52,11 +52,14 @@ export function PendingInvitesBanner() {
           body: JSON.stringify({ inviteId }),
         });
         if (!res.ok) {
-          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          const data = (await res.json().catch(() => ({}))) as {
+            error?: string;
+          };
           setError(data.error ?? "Could not accept invite.");
           setPendingId(null);
           return;
         }
+
         await update();
         await load();
         router.refresh();
@@ -112,7 +115,9 @@ export function PendingInvitesBanner() {
                   disabled={isPending && pendingId === inv.id}
                   onClick={() => void accept(inv.id)}
                 >
-                  {isPending && pendingId === inv.id ? "Accepting…" : "Accept invitation"}
+                  {isPending && pendingId === inv.id
+                    ? "Accepting…"
+                    : "Accept invitation"}
                 </Button>
               </CardContent>
             </Card>
@@ -122,3 +127,4 @@ export function PendingInvitesBanner() {
     </div>
   );
 }
+

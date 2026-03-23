@@ -65,7 +65,7 @@ export async function createProject(formData: FormData){
             action: "CREATE_PROJECT",
             userId: user.id,
             organizationId: activeOrg.id,
-            resource: project.id,
+            resource: `Created project "${name}" (${project.id.slice(0, 8)}…)`,
         })
 
         await tx.projectMembership.create({

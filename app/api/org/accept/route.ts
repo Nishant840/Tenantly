@@ -34,6 +34,9 @@ export async function POST(req: Request) {
           email: user.email,
           status: "PENDING",
         },
+        include: {
+          organization: { select: { name: true } },
+        },
       })
     : await prisma.orgInvite.findFirst({
         where: {
@@ -41,6 +44,9 @@ export async function POST(req: Request) {
           status: "PENDING",
         },
         orderBy: { createdAt: "asc" },
+        include: {
+          organization: { select: { name: true } },
+        },
       });
 
   if (!invite) {
@@ -74,7 +80,7 @@ export async function POST(req: Request) {
     action: "ACCEPT_INVITE",
     userId: user.id,
     organizationId: invite.organizationId,
-    resource: `${user.email} joined as ${invite.role} (invite ${invite.id.slice(0, 8)}…)`,
+    resource: `${user.email} accepted invite as ${invite.role} for "${invite.organization?.name ?? "organization"}" (invite ${invite.id.slice(0, 8)}…)`,
   });
 
   return NextResponse.json({ success: true });

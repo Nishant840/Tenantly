@@ -10,3 +10,9 @@ export function userActiveOrgUpdateData(
 ): Prisma.UserUncheckedUpdateInput {
   return { activeOrgId: organizationId };
 }
+
+export function userActiveOrgUpdateDataNullable(
+  organizationId: string | null,
+): Prisma.UserUncheckedUpdateInput {
+  return { activeOrgId: organizationId };
+}
