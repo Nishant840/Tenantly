@@ -374,8 +374,10 @@ User
 
 ## 🧑‍💻 Author
 
-Nishant Kumar
-B.Tech, Computer Science  
+## 🧑‍💻 Author
+
+Nishant Kumar  
+B.Tech Computer Science  
 Indian Institute of Information Technology (IIIT) Bhopal
 
 ----------
