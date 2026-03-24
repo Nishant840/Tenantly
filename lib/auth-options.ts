@@ -43,6 +43,8 @@ async function syncUserJwtFromDb(token: JWT, email: string) {
 }
 
 const authOptions: AuthOptions = {
+  // @ts-ignore - trustHost exists at runtime but missing from v4 types
+  trustHost: true,
   pages: {
     signIn: "/signin",
   },
